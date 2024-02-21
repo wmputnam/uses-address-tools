@@ -1,0 +1,25 @@
+{
+  "name": "post-mail-check-usps",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "test:old": "export SHIPPING_API_ID=8THEFR1N44845 SHIPPING_API_KEY=P1680OY20P4768P && mocha -r ts-node/register '**/*.test.ts' --unhandled-rejections=strict",
+    "test": "export SHIPPING_API_ID=xemzXhKhJ1hGcRShP6g1x5nVG5kKCtN0 SHIPPING_API_KEY=qdN0Gy3hLz3vYqRV && mocha -r ts-node/register '**/*.test.ts' --unhandled-rejections=strict",
+    "test:fromInit": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "^4.3.10",
+    "@types/debug": "^4.1.12",
+    "@types/mocha": "^10.0.4",
+    "@types/node": "^20.9.0",
+    "chai": "^4.3.10",
+    "debug": "^4.3.4",
+    "mocha": "^10.2.0",
+    "simple-xml-to-json": "^1.1.7",
+    "ts-node": "^10.9.1"
+  }
+}
