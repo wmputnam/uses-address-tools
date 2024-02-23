@@ -58,6 +58,15 @@ export class AddressBuilder {
     return this;
   }
 
+  withZIPPlus4 = (ZIPPlus4: string): AddressBuilder | undefined => {
+    this.address.ZIPPlus4 = ZIPPlus4;
+    return this;
+  }
+
+  withZIPCode = (ZIPCode: string): AddressBuilder | undefined => {
+    this.address.ZIPCode = ZIPCode;
+    return this;
+  }
   withUrbanization = (urbanization: string): AddressBuilder | undefined => {
     this.address.urbanization = urbanization;
     return this;

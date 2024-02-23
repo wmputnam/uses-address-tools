@@ -1,20 +1,51 @@
 import { Address } from "../src/service/Address";
 import { AddressBuilder } from "../src/service/AddressBuilder";
 import { expect } from "chai";
+import { uspsAddressCheck } from '../src/usps-api-address-check';
+import { assert } from "console";
+
 
 const fn = () => `${__filename.split('/').pop()}`;
 
 describe(`${fn()}: USPS Address Check`, async function () {
   it(`should return a no-change status when supplied address validates with no change`, async function () {
+    const testStreetAddress = "7222 KRAFT AVE";
+    const testCity = "N HOLLYWOOD";
+    const testState = "CA";
+    const testZipCode = "91605";
+    const testZipPlus4 = "3909";
     const builder: AddressBuilder = new AddressBuilder();
-    builder.withStreetAddress("7222 KRAFT AVE");
-    builder.withCity("N HOLLYWOOD");
-    builder.withState("CA");
-    builder.withZIP("91605-3909");
+    builder.withStreetAddress(testStreetAddress);
+    builder.withCity(testCity);
+    builder.withState(testState);
+    builder.withZIPCode(testZipCode);
+    builder.withZIPPlus4(testZipPlus4);
     const testAddress: Address | undefined = builder.build();
+    let status: number;
+    let data: any;
     if (testAddress) {
-      const checkResults = await Address.checkAddress(testAddress.toUspsAddressInterface());
-      expect(checkResults.status).to.be.equal('valid');
+      const checkout = await uspsAddressCheck(testAddress)
+      if (checkout) {
+        // console.log(`checkout: ${JSON.stringify(checkout)}`);
+        status = checkout.status;
+        data = checkout.data;
+        // console.log(`plus4: ${data.address.ZIPPlus4}`)
+        expect(status).to.equal(200);
+        expect(data.address.streetAddress).to.equal(testStreetAddress);
+        expect(data.address.city).to.equal(testCity);
+        expect(data.address.state).to.equal(testState);
+        expect(data.address.ZIPCode).to.equal(testZipCode);
+        expect(data.address.ZIPPlus4).to.equal(testZipPlus4);
+      }
+      // .catch((error) => {
+      //   if (error.name === "AssertionError") {
+      //     throw Error(error);
+      //   } else {
+      //     console.error(`error returned to 'USPS Address Check' ${JSON.stringify(error)}`)
+      //   }
+      // }
+      // );
+      // const checkResults = await Address.checkAddress(testAddress.toUspsAddressInterface());
     }
   });
 

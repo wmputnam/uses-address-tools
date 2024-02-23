@@ -1,20 +1,20 @@
 import { UspsAddressInterface } from "../model/USPS-Address-interface";
 import { ChangeAddress } from "../model/AddressChange";
 import debug from "debug";
-import { requestAddressValidation } from "./UsPsWebTools";
+// import { requestAddressValidation } from "./UsPsWebTools";
 
 const fn = () => `${__filename.split('/').pop()}`;
 const log: debug.IDebugger = debug(`${fn}`);
 
 const MISSING_REQUIRED = `MISSING REQUIRED`;
-export class Address {
-  streetAddress?: String;
-  secondaryAddress?: String;
-  city?: String;
-  state?: String;
-  urbanization?: String;
-  ZIPCode?: String;
-  ZIPPlus4?: String;
+export class Address implements UspsAddressInterface {
+  streetAddress?: string;
+  secondaryAddress?: string;
+  city?: string;
+  state?: string;
+  urbanization?: string;
+  ZIPCode?: string;
+  ZIPPlus4?: string;
 
   static checkAddress = async (address: UspsAddressInterface): Promise<ChangeAddress> => {
     let localValid = true;
@@ -85,17 +85,17 @@ export class Address {
   }
 
   static async remoteCheck(a: UspsAddressInterface, ca: ChangeAddress): Promise<ChangeAddress> {
-    const validationResult = await requestAddressValidation(
-      {
-        address1: a.streetAddress,
-        address2: a.secondaryAddress,
-        city: a.city,
-        zip5: a.ZIPCode,
-        zip4: a.ZIPPlus4
-      }
-    );
+    // const validationResult = await requestAddressValidation(
+    //   {
+    //     address1: a.streetAddress,
+    //     address2: a.secondaryAddress,
+    //     city: a.city,
+    //     zip5: a.ZIPCode,
+    //     zip4: a.ZIPPlus4
+    //   }
+    // );
     // {"Address2":"7222 KRAFT AVE","City":"N HOLLYWOOD","State":"CA","Zip5":"91605","Zip4":"3909"}
-    
+
 
     return ca;
   }
