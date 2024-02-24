@@ -2,7 +2,6 @@ import { Address } from "../src/service/Address";
 import { AddressBuilder } from "../src/service/AddressBuilder";
 import { expect } from "chai";
 import { uspsAddressCheck } from '../src/usps-api-address-check';
-import { assert } from "console";
 
 
 const fn = () => `${__filename.split('/').pop()}`;
@@ -24,12 +23,10 @@ describe(`${fn()}: USPS Address Check`, async function () {
     let status: number;
     let data: any;
     if (testAddress) {
-      const checkout = await uspsAddressCheck(testAddress)
-      if (checkout) {
-        // console.log(`checkout: ${JSON.stringify(checkout)}`);
-        status = checkout.status;
-        data = checkout.data;
-        // console.log(`plus4: ${data.address.ZIPPlus4}`)
+      const addressCheckResult = await uspsAddressCheck(testAddress)
+      if (addressCheckResult) {
+        status = addressCheckResult.status;
+        data = addressCheckResult.data;
         expect(status).to.equal(200);
         expect(data.address.streetAddress).to.equal(testStreetAddress);
         expect(data.address.city).to.equal(testCity);
@@ -37,97 +34,162 @@ describe(`${fn()}: USPS Address Check`, async function () {
         expect(data.address.ZIPCode).to.equal(testZipCode);
         expect(data.address.ZIPPlus4).to.equal(testZipPlus4);
       }
-      // .catch((error) => {
-      //   if (error.name === "AssertionError") {
-      //     throw Error(error);
-      //   } else {
-      //     console.error(`error returned to 'USPS Address Check' ${JSON.stringify(error)}`)
-      //   }
-      // }
-      // );
-      // const checkResults = await Address.checkAddress(testAddress.toUspsAddressInterface());
     }
   });
 
-  it.skip(`should return address change object with 9 digit ZIP when supplied a valid address with a 5 digit ZIP`, async function () {
+  it(`should return address object with 9 digit ZIP when supplied a valid address with a 5 digit ZIP`, async function () {
+    const testStreetAddress = "7222 KRAFT AVENUE";
+    const expectStreetAddress = "7222 KRAFT AVE";
+    const testCity = "NORTH HOLLYWOOD";
+    const expectCity = "N HOLLYWOOD";
+    const testState = "CA";
+    const testZipCode = "91605";
+    const expectZipPlus4 = "3909";
     const builder: AddressBuilder = new AddressBuilder();
-    builder.withStreetAddress("7222 KRAFT AVE");
-    builder.withCity("N HOLLYWOOD");
-    builder.withState("CA");
-    builder.withZIP("91605");
+    builder.withStreetAddress(testStreetAddress);
+    builder.withCity(testCity);
+    builder.withState(testState);
+    builder.withZIPCode(testZipCode);
     const testAddress: Address | undefined = builder.build();
+    let status: number;
+    let data: any;
     if (testAddress) {
-      const checkResults = await Address.checkAddress(testAddress.toUspsAddressInterface());
-      expect(checkResults.status).to.be.equal('change');
-      expect(checkResults.changes?.ZIPPLus4).to.be.equal("3909")
+      const addressCheckResult = await uspsAddressCheck(testAddress)
+      if (addressCheckResult) {
+        status = addressCheckResult.status;
+        data = addressCheckResult.data;
+        expect(status).to.equal(200);
+        expect(data.address.streetAddress).to.equal(expectStreetAddress);
+        expect(data.address.city).to.equal(expectCity);
+        expect(data.address.state).to.equal(testState);
+        expect(data.address.ZIPCode).to.equal(testZipCode);
+        expect(data.address.ZIPPlus4).to.equal(expectZipPlus4);
+      }
     }
   });
 
-  it.skip(`should return address change object with street address recommendated changes when supplied a valid address having non-standard address form (e.g., 7222 Kraft Avenue => 7222 KRAFT AV)`, async function () {
+  it(`should return address object with standardize street address when supplied a valid address with a 5 digit ZIP`, async function () {
+    const testStreetAddress = "7222 KRAFT";
+    const expectStreetAddress = "7222 KRAFT AVE";
+    const expectCity = "N HOLLYWOOD";
+    const testState = "CA";
+    const testZipCode = "91605";
+    const expectZipPlus4 = "3909";
     const builder: AddressBuilder = new AddressBuilder();
-    builder.withStreetAddress("7222 KRAFT");
-    builder.withCity("N HOLLYWOOD");
-    builder.withState("CA");
-    builder.withZIP("91605");
+    builder.withStreetAddress(testStreetAddress);
+    builder.withState(testState);
+    builder.withZIPCode(testZipCode);
     const testAddress: Address | undefined = builder.build();
+    let status: number;
+    let data: any;
     if (testAddress) {
-      const checkResults = await Address.checkAddress(testAddress.toUspsAddressInterface());
-      expect(checkResults.status).to.be.equal('change');
-      expect(checkResults.changes?.streetAddress).to.be.equal("7222 KRAFT AVE")
-    }
-
-  });
-
-  it.skip(`should return an invalid address status when supplied address is not valid`, async function () {
-    const builder: AddressBuilder = new AddressBuilder();
-    builder.withStreetAddress("7218 KROFT");
-    builder.withCity("LOS ANGELES");
-    builder.withState("CA");
-    builder.withZIP("90024");
-    const testAddress: Address | undefined = builder.build();
-    if (testAddress) {
-      const checkResults = await Address.checkAddress(testAddress.toUspsAddressInterface());
-      expect(checkResults.status).to.be.equal('invalid');
-    }
-  });
-
-  const MISSING_REQUIRED = "MISSING REQUIRED"
-  it.skip(`should return an invalid address status when supplied address does not include a streetAddress`, async function () {
-    const builder: AddressBuilder = new AddressBuilder();
-    builder.withCity("N HOLLYWOOD");
-    builder.withState("CA");
-    builder.withZIP("91605");
-    const testAddress: Address | undefined = builder.build();
-    if (testAddress) {
-      const checkResults = await Address.checkAddress(testAddress.toUspsAddressInterface());
-      expect(checkResults.status).to.be.equal('invalid');
-      expect(checkResults.changes?.streetAddress).to.be.equal(MISSING_REQUIRED)
+      const addressCheckResult = await uspsAddressCheck(testAddress)
+      if (addressCheckResult) {
+        status = addressCheckResult.status;
+        data = addressCheckResult.data;
+        expect(status).to.equal(200);
+        expect(data.address.streetAddress).to.equal(expectStreetAddress);
+        expect(data.address.city).to.equal(expectCity);
+        expect(data.address.state).to.equal(testState);
+        expect(data.address.ZIPCode).to.equal(testZipCode);
+        expect(data.address.ZIPPlus4).to.equal(expectZipPlus4);
+      }
     }
   });
 
-  it.skip(`should return an invalid address status when supplied address does not include a city`, async function () {
+  it(`should return an invalid address status when supplied address is not valid`, async function () {
+    const testStreetAddress = "17222 KRAFT";
+    const testState = "CA";
+    const testZipCode = "91605";
+    const expectError = "address not found";
     const builder: AddressBuilder = new AddressBuilder();
-    builder.withStreetAddress("7222 KRAFT AVE");
-    builder.withState("CA");
-    builder.withZIP("91605");
+    builder.withStreetAddress(testStreetAddress);
+    builder.withState(testState);
+    builder.withZIPCode(testZipCode);
     const testAddress: Address | undefined = builder.build();
+    let status: number;
+    let error: string;
     if (testAddress) {
-      const checkResults = await Address.checkAddress(testAddress.toUspsAddressInterface());
-      expect(checkResults.status).to.be.equal('invalid');
-      expect(checkResults.changes?.city).to.be.equal(MISSING_REQUIRED)
+      const addressCheckResult = await uspsAddressCheck(testAddress)
+      if (addressCheckResult) {
+        status = addressCheckResult.status;
+        error = (addressCheckResult.data.error.message as string).toLowerCase();
+        expect(status).to.be.oneOf([400, 404]);
+        expect(error).to.contain(expectError);
+      }
     }
   });
 
-  it.skip(`should return an invalid address status when supplied address does not include a state`, async function () {
+  it(`should return an invalid address status when supplied address does not include a city or ZIPCode`, async function () {
+    const testStreetAddress = "17222 KRAFT";
+    const testState = "CA";
+    const expectError = "invalid city";
     const builder: AddressBuilder = new AddressBuilder();
-    builder.withStreetAddress("7222 KRAFT AVE");
-    builder.withCity("N HOLLYWOOD");
-    builder.withZIP("91605");
+    builder.withStreetAddress(testStreetAddress);
+    builder.withState(testState);
     const testAddress: Address | undefined = builder.build();
+    let status: number;
+    let error: string;
     if (testAddress) {
-      const checkResults = await Address.checkAddress(testAddress.toUspsAddressInterface());
-      expect(checkResults.status).to.be.equal('invalid');
-      expect(checkResults.changes?.state).to.be.equal(MISSING_REQUIRED)
+      const addressCheckResult = await uspsAddressCheck(testAddress)
+      if (addressCheckResult) {
+        status = addressCheckResult.status;
+        error = (addressCheckResult.data.error.message as string).toLowerCase();
+        expect(status).to.equal(400);
+        expect(error).to.contain(expectError);
+      }
+    }
+  });
+
+  it(`should return an invalid address status when supplied address does not include a street address`, async function () {
+    const testStreetAddress = "17222 KRAFT";
+    const testState = "CA";
+    const testZipCode = "91605";
+    const expectErrorAddress = "streetaddress";
+    const expectErrorRequired = "is required";
+    const builder: AddressBuilder = new AddressBuilder();
+    // builder.withStreetAddress(testStreetAddress);
+    builder.withState(testState);
+    builder.withZIPCode(testZipCode);
+    const testAddress: Address | undefined = builder.build();
+    let status: number;
+    let error: string;
+    if (testAddress) {
+      const addressCheckResult = await uspsAddressCheck(testAddress);
+
+      if (addressCheckResult) {
+        status = addressCheckResult.status;
+        error = (addressCheckResult.data.error.message as string).toLowerCase();
+        expect(status).to.equal(400);
+        expect(error).to.include([expectErrorAddress]);
+        expect(error).to.include([expectErrorRequired]);
+      }
+    }
+  });
+
+  it(`should return an invalid address status when supplied address does not include a state`, async function () {
+    const testStreetAddress = "17222 KRAFT";
+    const testState = "CA";
+    const testZipCode = "91605";
+    const expectErrorAddress = "state";
+    const expectErrorRequired = "is required";
+    const builder: AddressBuilder = new AddressBuilder();
+    builder.withStreetAddress(testStreetAddress);
+    // builder.withState(testState);
+    builder.withZIPCode(testZipCode);
+    const testAddress: Address | undefined = builder.build();
+    let status: number;
+    let error: string;
+    if (testAddress) {
+      const addressCheckResult = await uspsAddressCheck(testAddress);
+
+      if (addressCheckResult) {
+        status = addressCheckResult.status;
+        error = (addressCheckResult.data.error.message as string).toLowerCase();
+        expect(status).to.equal(400);
+        expect(error).to.include([expectErrorAddress]);
+        expect(error).to.include([expectErrorRequired]);
+      }
     }
   });
 
