@@ -1,4 +1,4 @@
-export interface UspsAddressInterface {
+export interface IUspsAddressInterface {
   streetAddress?: string;
   secondaryAddress?: string;
   city?: string;

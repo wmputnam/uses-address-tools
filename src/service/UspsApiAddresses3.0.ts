@@ -1,4 +1,9 @@
-import { UspsAddressInterface } from "../model/USPS-Address-interface";
+import { IUspsAddressInterface } from "../model/USPS-Address-interface";
+import { IAddressCheckResult } from '../model/Address-Check-Result-interface';
+import { IAddressRequestResponse } from "../model/USPS-Address-Request-Response-interface";
+// import { IAddressResponse } from "../model/USPS-Address-response-interface";
+import { IUspsErrorResponseInterface } from "../model/USPS-Error-Response-interface";
+import { IAddressResponse } from "../model/USPS-Address-Response-interface";
 
 const USPS_API_CAT_BASE = "https://api-cat.usps.com";
 const SIM_API_CAT_BASE = "https://localhost:3636/api/v1/sim";
@@ -14,21 +19,31 @@ export class UspsApiAddressV30Service {
   static fn = () => `${__filename.split('/').pop()}`;
 
 
-  static call = async (token: string, params: UspsAddressInterface): Promise<any> => {
+  static call = async (token: string, params: IUspsAddressInterface): Promise<IAddressRequestResponse> => {
 
-    const myHeaders = new Headers();
     const authauth = `Bearer ${token}`;
+    // console.log(`authauth: ${authauth}`);
 
-    myHeaders.append("Authorization", `${authauth}`);
-    myHeaders.append("Content-Type", "application/json")
+    let myHeaders = new Headers();
+    myHeaders.set("Content-Type", "application/json")
+    // console.log(`\nmyHeaders: ${JSON.stringify(myHeaders.get("Content-Type"))}`);
+    try {
+      myHeaders.set("Authorization", authauth);
+      // console.log(`\nmyHeaders: ${JSON.stringify(myHeaders.get("Authorization"))}`);
+    } catch (err) {
+      console.error(err);
+    }
+    // console.log(`\nmyHeaders: ${JSON.stringify(myHeaders)}`);
+    // console.log(`\nmyHeaders: ${JSON.stringify(myHeaders)}`);
 
     const requestOptions = {
       method: "GET",
+      mode: "cors",
       headers: myHeaders
     };
 
     const url: URL = new URL(API_CAT_PATH, USPS_API_CAT_BASE);
-    // console.log(`url: ${url}`)
+
 
     if (params.streetAddress) {
       url.searchParams.append('streetAddress', params.streetAddress);
@@ -53,55 +68,41 @@ export class UspsApiAddressV30Service {
       url.searchParams.append('ZIPPlus4', params.ZIPPlus4);
     }
 
+    // console.log(`url: ${url}`)
+    // console.log(`options: ${JSON.stringify(requestOptions)}`)
     // TODO: add urbanization if we ever need it
 
+    const myRequest = new Request(url);
     try {
-      const response = await fetch(url,
-        requestOptions);
-      const status = response.status;
+      const response = await fetch(myRequest, requestOptions as RequestInit);
+      const status: number = response.status;
+      // console.log(`address status ${typeof status}`)
+      // console.log(`address status ${status}`)
       const data = await response.json()
-      return { status: status, data: data };
+      // console.log(`address response ${JSON.stringify(await data)}`)
+      if (status === 200) {
+        return {
+          httpStatus: status,
+          addressResponse: {
+            firm: data.firm,
+            address: data.address,
+            additionalInfo: data.additionalInfo,
+            corrections: [],
+            matches: []
+          }
+        } as IAddressRequestResponse;
+      } else {
+        return {
+          httpStatus: status,
+          errorResponse: {
+            apiVersion: data.apiVersion,
+            error: data.error
+          }
+        } as IAddressRequestResponse
+      }
     } catch (error) {
       console.error(error);
-
+      throw new Error(`${JSON.stringify(error)}`)
     }
-    // fetch("https://api-cat.usps.com/addresses/v3/address?streetAddress=3120%20M%20St&city=Washington&state=DC&ZIPCode=20027&ZIPPlus4=3704",
-    //   requestOptions)
-    //   .then((response) => response.json())
-    //   .then((result) => { console.log(JSON.stringify(result)); return result; })
-    //   .catch((error) => console.error(error));
-
-
-
-
-    // const consumer_id: string = process.env.USPS_SHIPPING_CLIENT_ID as string;
-
-    // const consumer_secret: string = process.env.USPS_SHIPPING_CLIENT_SECRET as string;
-
-    // console.log(`${JSON.stringify(process.env.TERM_PROGRAM)}`);
-
-    // const requestBody = {
-    //   "client_id": consumer_id,
-    //   "client_secret": consumer_secret,
-    //   "grant_type": "client_credentials"
-    // };
-
-    // // console.log(`${JSON.stringify(requestBody)}`);
-    // fetch(UspsApiAddressV30Service.SIM_API_CAT_BASE, {
-    //   method: 'GET',
-    //   body: JSON.stringify(requestBody),
-    //   headers: { 'Content-Type': 'application/json' }
-    // })
-    //   .then(response => response.json())
-    //   .then(result => {
-    //     // console.log(`${UspsApiOAuth30Service.fn()}:  ${JSON.stringify(result)}`);
-    //     // const rawJSON = repackageResponseAsJSON(result);
-    //     // console.log(`${fn()} rawJSON: ${JSON.stringify(rawJSON)}`);
-    //     return result['access_token'];
-    //   })
-    //   .catch(error => console.log(`${UspsApiAddressV30Service.fn()}: error: ${error}`));
-    // return {};
   }
-
-
 }

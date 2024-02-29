@@ -6,7 +6,8 @@
   "scripts": {
     "test:old": "export SHIPPING_API_ID=8THEFR1N44845 SHIPPING_API_KEY=P1680OY20P4768P && mocha -r ts-node/register '**/*.test.ts' --unhandled-rejections=strict",
     "test": "mocha -r ts-node/register '**/*.test.ts' --unhandled-rejections=strict",
-    "test:fromInit": "echo \"Error: no test specified\" && exit 1"
+    "test:fromInit": "echo \"Error: no test specified\" && exit 1",
+    "compile": "tsc"
   },
   "keywords": [],
   "author": "",
