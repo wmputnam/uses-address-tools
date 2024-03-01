@@ -1,4 +1,4 @@
-# post-mail-check-usps
+# @wmputnam/usps-address-tools
 ## summary
 Typescript module to support interactions with USPS API
 
