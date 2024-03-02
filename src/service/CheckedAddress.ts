@@ -85,7 +85,7 @@ export class CheckedAddress implements IAddressCheckResult {
       try {
         let checkResult: IAddressCheckResult = await uspsAddressCheck(addressToCheck);
         ca.status = checkResult.status;
-        if (ca.status === IAddressCheckStatus.OK) {
+        if (ca.status === IAddressCheckStatus.OKAY) {
           ca.statusMessage = checkResult.statusMessage;
           ca.addressResponse = checkResult.addressResponse;
           ca.additionalInfoResponse = checkResult.additionalInfoResponse;

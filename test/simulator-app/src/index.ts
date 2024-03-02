@@ -5,7 +5,7 @@ import addressController from "./controller/addressController";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3636;
+const port = process.env.SIM_APP_PORT || 3636;
 
 app.get('/', (req, res) => {
   res.status(404).send({ error: { message: 'Express + TypeScript Server!! (nodemon)' } });
